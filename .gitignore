@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.openai/
+.aws/
+.agents/
+.codex/
+shortcircuit-lab.html

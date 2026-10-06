@@ -1,0 +1,9 @@
+.git
+.openai
+.aws
+.agents
+.codex
+node_modules
+dist
+shortcircuit-lab.html
+README.md

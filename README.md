@@ -40,9 +40,9 @@ The stdio server uses the MCP tools protocol and has no third party dependencies
 Available tools:
 
 - `circuit_new` creates a fresh named circuit.
-- `circuit_add_component` places `resistor`, `lamp`, `voltage`, `current`, or `ground` components. Coordinates are schematic pixels in a 1000 × 600 viewBox. Defaults: 1 kΩ resistor, 100 Ω lamp, 5 V source, 5 mA source.
-- `circuit_connect` connects two component terminals. Resistor, lamp, and current source terminals are `a` and `b`; voltage source terminals are `+` and `−`; ground uses `gnd`. Each component ID is returned when it is added.
-- `circuit_simulate` returns DC node voltages and per-component voltage, current, and power. A ground symbol is required.
+- `circuit_add_component` places parts from the library: breadboard; resistors, ceramic/electrolytic capacitors, supercapacitor, inductor, fuse, switch; diode, LED, Schottky, Zener, TVS, MOV; 12 V/5 V buck modules, 3.3 V regulator, P-channel MOSFET; Ford NTC temperature sender, fuel sender, oil pressure transducer, LM1815 tach VR conditioner, LDR, relay/driver, 3-pin sensor and 4-pin connectors; BAT54S clamp, 74HC165, SN65HVD230, MCP2515, TCA9548A, ESP32-P4/S3 boards, SSD1306 OLED; voltage/current sources, lamp, and ground. Coordinates are schematic pixels in a 1000 × 600 viewBox. Component values and ratings can be set in the tool arguments or properties panel.
+- `circuit_connect` connects two component terminals. Two-terminal passive parts use `a` and `b`; diode-family parts use `a` and `k`; voltage sources use `+` and `−`; buck/regulator pins use `vin`, `gnd`, and `vout`. Breadboard holes use `r01a` through `r30j`, and rails use `tpa`–`tpj`, `tna`–`tnj`, `bpa`–`bpj`, and `bna`–`bnj`. Each five-hole row bank and each power rail is internally connected.
+- `circuit_simulate` returns DC node voltages and component voltage, current, and power. Capacitors act as open circuits at DC; diodes and clamps use piecewise DC models; buck/regulator modules use regulated-output DC macro models with input loading. It does not calculate switching waveforms, MOSFET switching, IC logic, or capacitor charge/discharge transients. Those parts remain available as pin-level schematic symbols. A ground symbol is required.
 - `circuit_visualize` returns the current schematic as SVG markup.
 - `circuit_inspect` returns the model and its wires.
 
@@ -52,5 +52,5 @@ For a Docker-based MCP client, run `docker compose --profile mcp run --rm -T mcp
 
 ## Simulation scope
 
-The solver uses modified nodal analysis for ideal voltage/current sources and linear resistors. Lamps are modeled as resistors with the chosen resistance. It reports a useful error for floating or singular circuits. It does not yet model transient behavior, capacitors, inductors, or nonlinear semiconductor devices.
+The component library includes parts from the 1988 Ford F-350 digital dash power and P4/S3 wiring plans. Breadboard five-hole banks and power rails are electrically common. The DC solver uses modified nodal analysis for sources, resistive parts, and the library's approximate diode and regulated-output models. Capacitors are open circuits in DC analysis; inductors use their configured series resistance. Temperature, fuel, and light senders are editable fixed-resistance equivalents; transducers, tach conditioners, relays, and IC modules are pin-level symbols. It reports errors for floating/singular circuits, converter input range violations, and converter output overcurrent. Transient waveforms, MOSFET switching, and IC logic simulation are not modeled yet.
 # shortCircuit
