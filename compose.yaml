@@ -1,0 +1,11 @@
+services:
+  shortcircuit-lab:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4173:4173"
+  mcp:
+    build: .
+    profiles: ["mcp"]
+    command: ["node", "mcp-server.js"]
+    stdin_open: true

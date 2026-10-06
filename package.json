@@ -1,0 +1,8 @@
+{
+  "name": "shortcircuit-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A browser circuit workbench with an MCP server for building and simulating circuits.",
+  "scripts": { "start": "node server.js", "mcp": "node mcp-server.js", "build": "node build.js" },
+  "engines": { "node": ">=18" }
+}
