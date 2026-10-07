@@ -4,8 +4,15 @@ services:
     restart: unless-stopped
     ports:
       - "4173:4173"
+    volumes:
+      - shortcircuit-projects:/app/data
   mcp:
     build: .
     profiles: ["mcp"]
     command: ["node", "mcp-server.js"]
     stdin_open: true
+    volumes:
+      - shortcircuit-projects:/app/data
+
+volumes:
+  shortcircuit-projects:

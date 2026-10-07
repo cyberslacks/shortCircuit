@@ -12,7 +12,7 @@ npm start
 
 Open [http://localhost:4173](http://localhost:4173). The starter page contains a 5 V source and 1 kΩ resistor. Click parts in the Components list to add them. Click a terminal dot and then another terminal dot to wire them. Select a part to edit its value. Press **Run simulation** (or Ctrl/⌘+Enter) to solve.
 
-The current schematic is saved in this browser's local storage. **New** starts a blank schematic.
+Projects are saved by the local server in `data/projects.json`, so the browser and MCP server work on the same project library. Use the project menu to switch projects, **Save as…** to keep a named copy, and **Delete** to remove the current project. **New** starts a blank project. **Export SVG** downloads the current schematic as a standalone SVG file. Existing browser-only projects are copied into the shared store the first time the app connects.
 
 ### Run with Docker
 
@@ -46,9 +46,7 @@ Available tools:
 - `circuit_visualize` returns the current schematic as SVG markup.
 - `circuit_inspect` returns the model and its wires.
 
-Each MCP server process owns an in-memory circuit for its lifetime. Browser local storage and an MCP process do not share circuit state.
-
-For a Docker-based MCP client, run `docker compose --profile mcp run --rm -T mcp` from this project directory as the server command. For a Node-based client, run `node /absolute/path/to/shortCircuit/mcp-server.js`.
+MCP includes `circuit_project_list`, `circuit_project_open`, `circuit_project_save`, and `circuit_project_delete` to manage the shared projects. Component additions and wires save automatically. The MCP process and browser must point to the same `data/projects.json`; Docker Compose mounts one shared volume for both services. For a Docker-based MCP client, run `docker compose --profile mcp run --rm -T mcp` from this project directory as the server command. For a Node-based client, run `node /absolute/path/to/shortCircuit/mcp-server.js` from this project directory.
 
 ## Simulation scope
 
