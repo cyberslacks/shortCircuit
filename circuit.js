@@ -78,7 +78,9 @@
     if (terminalKey(from) === terminalKey(to)) throw new Error('A wire must join two different terminals');
     const exists = circuit.wires.find(w => (terminalKey(w.from) === terminalKey(from) && terminalKey(w.to) === terminalKey(to)) || (terminalKey(w.from) === terminalKey(to) && terminalKey(w.to) === terminalKey(from)));
     if (exists) return exists;
-    const wire = { from: { ...from }, to: { ...to } };
+    const colors=['#58d6ba','#f4b860','#8b9cff','#ff8e83','#8ac9ff','#c2a0ff','#a8d66d','#ff9bd2'];
+    const index=circuit.wires.length;
+    const wire = { from: { ...from }, to: { ...to }, color: colors[index%colors.length], label:`W${index+1}` };
     circuit.wires.push(wire);
     return wire;
   }
@@ -193,8 +195,11 @@
   }
   function toSvg(circuit) {
     const W=1000,H=600, byKey=ref=>{const p=circuit.components.find(x=>x.id===ref.component);return p&&terminalPosition(p,ref.terminal);};
-    const paths=circuit.wires.map(w=>{const a=byKey(w.from),b=byKey(w.to);if(!a||!b)return '';const mid=(a.x+b.x)/2;return `<path d="M${a.x} ${a.y} H${mid} V${b.y} H${b.x}"/>`;}).join('');
     const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const wireColors=['#58d6ba','#f4b860','#8b9cff','#ff8e83','#8ac9ff','#c2a0ff','#a8d66d','#ff9bd2'];
+    const routes=circuit.wires.map((w,i)=>{const a=byKey(w.from),b=byKey(w.to);return a&&b?{a,b,mid:(a.x+b.x)/2+((i%3)-1)*18,color:w.color||wireColors[i%wireColors.length],index:i}:null;});
+    const paths=routes.map((r,i)=>{if(!r)return '';const {a,b,mid,color}=r,w=circuit.wires[i],label=esc(w.label||`W${i+1}`),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;return `<g class="wire" style="--wire:${color}"><title>${label}: ${esc(w.from.component)}.${esc(w.from.terminal)} → ${esc(w.to.component)}.${esc(w.to.terminal)}</title><path d="M${a.x} ${a.y} H${mid} V${b.y} H${b.x}"/><text class="wire-label" x="${cx}" y="${cy-5}">${label}</text></g>`;}).join('');
+    const bridges=[];for(let i=0;i<routes.length;i++)for(let j=i+1;j<routes.length;j++){const a=routes[i],b=routes[j];if(!a||!b)continue;const crossings=(horizontal,vertical,over)=>{const hs=[[horizontal.a.x,horizontal.a.y,horizontal.mid],[horizontal.mid,horizontal.b.y,horizontal.b.x]],x=vertical.mid,y1=vertical.a.y,y2=vertical.b.y;for(const [x1,y,x2] of hs)if(x>Math.min(x1,x2)+5&&x<Math.max(x1,x2)-5&&y>Math.min(y1,y2)+5&&y<Math.max(y1,y2)-5){const d=`M${x-6} ${y} Q${x} ${y-7} ${x+6} ${y}`;bridges.push(`<path class="wire-bridge-halo" d="${d}"/><path class="wire-bridge" d="${d}" style="--wire:${over.color}"/>`);}};crossings(a,b,b);crossings(b,a,b);}
     const boards=circuit.components.filter(p=>p.type==='breadboard').map(p=>{
       const {x,y}=p,holes=[];
       for(let n=1;n<=30;n++)for(const col of 'abcdefghij'){const name=`r${String(n).padStart(2,'0')}${col}`,q=terminalPosition(p,name);holes.push(`<circle class="board-hole" data-component="${esc(p.id)}" data-terminal="${name}" cx="${q.x}" cy="${q.y}" r="2.5"/>`);}
@@ -221,7 +226,7 @@
       const term=terminalsFor(p).map(t=>{const q=terminalPosition(p,t);return `<circle class="terminal" data-component="${esc(p.id)}" data-terminal="${esc(t)}" cx="${q.x}" cy="${q.y}" r="${terminalsFor(p).length>2?4:6}"/>`;}).join('');
       return `<g class="part" data-id="${esc(p.id)}" style="--part:${d.color}">${term}<g class="symbol">${symbol}</g><text class="part-name" x="${x}" y="${y-32}">${esc(d.label)} · ${esc(p.id)}</text><text class="part-value" x="${x}" y="${y+42}">${esc(value)}</text></g>`;
     }).join('');
-    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Circuit schematic"><defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#273246"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/>${boards}<g class="wires">${paths}</g><g>${shapes}</g></svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Circuit schematic"><defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#273246"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)"/>${boards}<g class="wires">${paths}${bridges.join('')}</g><g>${shapes}</g></svg>`;
   }
   return {definitions,terminalsFor,createCircuit,addComponent,connect,solve,toSvg,terminalPosition};
 });
